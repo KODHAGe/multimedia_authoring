@@ -1,0 +1,105 @@
+<html>
+<head>
+  <meta charset="utf-16">
+  <meta name="viewport" content="width=320"/>
+
+<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.5.9/slick.css"/>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.5.9/slick.min.js"></script>
+<style>
+body{font-family:"helvetica";font-size:2em;}
+.carousel {height:50%;text-align:center;}
+.emoji {height:100%;font-size:2em;}
+.buttons{width:100%;height:25%;display: flex;}
+.button{height:100%;width:50%;text-align:center;align-items: flex-end;justify-content:center;}
+.button:hover{background-color:black;color:white;}
+.controller{height:100%;width:50%;text-align:center;align-items: flex-end;justify-content:center;}
+.controller:hover{background-color:rgba(0,0,0,0.2);}
+.selected{background-color:black;color:white;}
+.sel{margin-top:50px;}
+</style>
+</head>
+<body>
+
+<div class="carousel">
+  <div val="1"> <div class="sel"><span class="emoji">🎺</span><br/>Trumpet </div></div>
+  <div val="2"> <div class="sel"><span class="emoji">🎹</span><br/>Piano </div></div>
+  <div val="3"> <div class="sel"><span class="emoji">🎷</span><br/>Sax </div></div>
+  <div val="4"> <div class="sel"><span class="emoji">🎻</span><br/>Violin </div></div>
+</div>
+<div class="buttons">
+  <div id="attract" class="button selected" val="1">
+    <p>Attract</p>
+  </div>
+  <div id="repulse" class="button" val="-1">
+    <p>Repulse</p>
+  </div>
+</div>
+
+<!--<div class="buttons">
+  <div id="one" class="controller selectedCon" val="1">
+    <p>One</p>
+  </div>
+  <div id="two" class="controller" val="2">
+    <p>Two</p>
+  </div>
+</div>-->
+
+<script>
+var socket = new WebSocket("ws://ookap.net:8079");
+
+socket.onopen = function (event) {
+  socket.send("controller");
+};
+
+if (window.DeviceMotionEvent == undefined) {
+    alert("No accelerometer");
+}
+else {
+    alert("Accelerometer found");
+    window.addEventListener("devicemotion", accelerometerUpdate, true);
+}
+
+function accelerometerUpdate(e) {
+   var aX = event.accelerationIncludingGravity.x*1;
+   var aY = event.accelerationIncludingGravity.y*1;
+   var aZ = event.accelerationIncludingGravity.z*1;
+
+   var msg = {
+     mode: parseInt($(".selected").attr("val")),
+     trumpet: parseInt($(".slick-active").attr("val")),
+     controller:1,
+     x: aX,
+     y: aY,
+     z: aZ
+   };
+   console.log(msg[0]);
+
+   socket.send(JSON.stringify(msg));
+
+}
+
+socket.onmessage = function(msg){
+  //console.log(msg);
+};
+
+</script>
+<script>
+$(document).ready(function(){
+  $('.carousel').slick({
+    "nextArrow":"",
+    "prevArrow":""
+  });
+
+  $(".button").click(function(){
+    $(".selected").removeClass("selected");
+    $(this).addClass("selected");
+  });
+
+
+});
+</script>
+
+</body>
+</html>
